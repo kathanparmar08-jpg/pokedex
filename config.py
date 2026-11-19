@@ -94,6 +94,7 @@ class Config:
     DB_PASSWORD: str = os.getenv("DB_PASSWORD", "")
     DB_NAME: str = os.getenv("DB_NAME", "pokedex_db")
     DB_POOL_SIZE: int = int(os.getenv("DB_POOL_SIZE", "10"))
+    DB_SSL: bool = os.getenv("DB_SSL", "0").lower() in ("1", "true", "yes")
 
     DEFAULT_PAGE_LIMIT: int = 20
     MAX_PAGE_LIMIT: int = 100
@@ -107,19 +108,22 @@ def get_db_pool() -> pooling.MySQLConnectionPool:
     """Lazily initialize and return the MySQL connection pool."""
     global _db_pool
     if _db_pool is None:
-        _db_pool = pooling.MySQLConnectionPool(
-            pool_name="pokedex_pool",
-            pool_size=Config.DB_POOL_SIZE,
-            pool_reset_session=True,
-            host=Config.DB_HOST,
-            port=Config.DB_PORT,
-            user=Config.DB_USER,
-            password=Config.DB_PASSWORD,
-            database=Config.DB_NAME,
-            charset="utf8mb4",
-            collation="utf8mb4_unicode_ci",
-            autocommit=False,
-        )
+        pool_kwargs = {
+            "pool_name": "pokedex_pool",
+            "pool_size": Config.DB_POOL_SIZE,
+            "pool_reset_session": True,
+            "host": Config.DB_HOST,
+            "port": Config.DB_PORT,
+            "user": Config.DB_USER,
+            "password": Config.DB_PASSWORD,
+            "database": Config.DB_NAME,
+            "charset": "utf8mb4",
+            "collation": "utf8mb4_unicode_ci",
+            "autocommit": False,
+        }
+        if Config.DB_SSL:
+            pool_kwargs["ssl_disabled"] = False
+        _db_pool = pooling.MySQLConnectionPool(**pool_kwargs)
     return _db_pool
 
 
