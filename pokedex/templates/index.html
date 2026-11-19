@@ -1,0 +1,336 @@
+{% extends "base.html" %}
+
+{% block title %}Pokédex — Explore All National Dex Pokémon (Gen I–IX){% endblock %}
+
+{% block content %}
+<!-- Hero & Controls Section -->
+<section class="pokedex-hero tw-py-7 tw-mb-6">
+    <div class="container">
+        <div class="d-flex flex-column flex-md-row align-items-md-end justify-content-between tw-gap-4 tw-mb-5">
+            <div>
+                <span class="tw-inline-flex tw-items-center tw-gap-1.5 tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-text-red-600 dark:tw-text-red-400 tw-mb-1">
+                    <i class="bi bi-stars"></i> Interactive 3D Pokédex
+                </span>
+                <h1 class="tw-text-3xl md:tw-text-4xl tw-font-extrabold tw-tracking-tight tw-mb-1">
+                    National Pokédex
+                    <span class="tw-font-mono tw-text-red-600 dark:tw-text-red-400">Gen I–IX</span>
+                </h1>
+                <p class="tw-text-sm md:tw-text-base tw-opacity-75 tw-mb-0">
+                    Hover (or tap on mobile) any card to flip in 3D and preview stats &amp; lore.
+                </p>
+            </div>
+
+            <!-- Sort & Result Counter -->
+            <div class="d-flex flex-wrap align-items-center tw-gap-3">
+                <div id="resultsCounter" class="tw-text-sm tw-font-semibold tw-opacity-80">
+                    Showing
+                    <span id="rangeText" class="tw-font-mono">
+                        {% if initial_data['total'] > 0 %}{{ initial_data['start_index'] }}–{{ initial_data['end_index'] }}{% else %}0{% endif %}
+                    </span>
+                    of <span id="totalCount" class="tw-font-mono">{{ initial_data['total'] }}</span> Pokémon
+                </div>
+
+                <div class="d-flex align-items-center tw-gap-2">
+                    <label for="sortSelect" class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-wider tw-opacity-70 mb-0">
+                        Sort
+                    </label>
+                    <select id="sortSelect" class="form-select form-select-sm pokedex-sort-select tw-rounded-full tw-font-semibold" aria-label="Sort Pokémon">
+                        <option value="id_asc" selected>#ID (Low → High)</option>
+                        <option value="id_desc">#ID (High → Low)</option>
+                        <option value="name_asc">Name (A → Z)</option>
+                        <option value="name_desc">Name (Z → A)</option>
+                        <option value="total_desc">Base Stat Total (High → Low)</option>
+                        <option value="total_asc">Base Stat Total (Low → High)</option>
+                        <option value="hp_desc">Highest HP</option>
+                        <option value="attack_desc">Highest Attack</option>
+                        <option value="speed_desc">Fastest (Speed)</option>
+                        <option value="weight_desc">Heaviest</option>
+                        <option value="height_desc">Tallest</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Type Filter Chips -->
+        <div class="type-filter-bar d-flex flex-wrap tw-gap-2 tw-mb-4" id="typeFilterBar" role="group" aria-label="Filter by Pokémon type">
+            <button
+                type="button"
+                class="type-chip active"
+                data-type="all"
+                style="--chip-color: #DC2626;"
+            >
+                All Types
+            </button>
+            {% for t in filter_options['types'] %}
+            <button
+                type="button"
+                class="type-chip"
+                data-type="{{ t.name }}"
+                style="--chip-color: {{ t.color_hex }};"
+            >
+                <span class="type-chip-dot" style="background-color: {{ t.color_hex }};"></span>
+                {{ t.name|title }}
+            </button>
+            {% endfor %}
+        </div>
+
+        <!-- Advanced Filters Bar -->
+        <div class="advanced-filters-box">
+            <div class="d-flex align-items-center justify-content-between tw-mb-2.5">
+                <span class="tw-text-xs tw-font-extrabold tw-uppercase tw-tracking-wider tw-opacity-75">
+                    <i class="bi bi-sliders2 me-1.5"></i>More Filters
+                </span>
+                <button
+                    type="button"
+                    id="clearAllFiltersBtn"
+                    class="btn btn-sm clear-filters-btn tw-rounded-full tw-hidden"
+                >
+                    <i class="bi bi-x-circle me-1"></i>Clear Filters
+                    <span id="activeFilterCount" class="badge rounded-pill text-bg-danger ms-1">0</span>
+                </button>
+            </div>
+
+            <div class="row g-2">
+                <!-- Generation Filter -->
+                <div class="col-6 col-md-4 col-lg-2">
+                    <label for="generationFilter" class="filter-label">Generation</label>
+                    <select id="generationFilter" class="form-select form-select-sm pokedex-filter-select">
+                        <option value="all">All Generations</option>
+                        {% for g in filter_options['generations'] %}
+                        <option value="{{ g.value }}">{{ g.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Rarity Filter -->
+                <div class="col-6 col-md-4 col-lg-2">
+                    <label for="rarityFilter" class="filter-label">Rarity</label>
+                    <select id="rarityFilter" class="form-select form-select-sm pokedex-filter-select">
+                        <option value="all">All Rarities</option>
+                        <option value="standard">Standard</option>
+                        <option value="legendary">Legendary</option>
+                        <option value="mythical">Mythical</option>
+                        <option value="special">Legendary &amp; Mythical</option>
+                    </select>
+                </div>
+
+                <!-- Egg Group Filter -->
+                <div class="col-6 col-md-4 col-lg-2">
+                    <label for="eggGroupFilter" class="filter-label">Egg Group</label>
+                    <select id="eggGroupFilter" class="form-select form-select-sm pokedex-filter-select">
+                        <option value="all">All Egg Groups</option>
+                        {% for eg in filter_options['egg_groups'] %}
+                        <option value="{{ eg.value }}">{{ eg.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Color Filter -->
+                <div class="col-6 col-md-4 col-lg-2">
+                    <label for="colorFilter" class="filter-label">Color</label>
+                    <select id="colorFilter" class="form-select form-select-sm pokedex-filter-select">
+                        <option value="all">All Colors</option>
+                        {% for c in filter_options['colors'] %}
+                        <option value="{{ c.value }}">{{ c.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Habitat Filter -->
+                <div class="col-6 col-md-4 col-lg-2">
+                    <label for="habitatFilter" class="filter-label">Habitat</label>
+                    <select id="habitatFilter" class="form-select form-select-sm pokedex-filter-select">
+                        <option value="all">All Habitats</option>
+                        {% for h in filter_options['habitats'] %}
+                        <option value="{{ h.value }}">{{ h.label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Min Base Stat Total Filter -->
+                <div class="col-6 col-md-4 col-lg-2">
+                    <label for="minStatFilter" class="filter-label">Base Stat Total</label>
+                    <select id="minStatFilter" class="form-select form-select-sm pokedex-filter-select">
+                        <option value="0">Any Total</option>
+                        <option value="300">300+</option>
+                        <option value="400">400+</option>
+                        <option value="500">500+ (Strong)</option>
+                        <option value="600">600+ (Elite)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Card Grid Section -->
+<section class="container" id="pokedexGridSection">
+    <!-- Loading Skeletons (shown while loading any page or filter) -->
+    <div id="skeletonGrid" class="row g-4 tw-hidden" aria-hidden="true">
+        {% for _ in range(8) %}
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="skeleton-card">
+                <div class="skeleton-shimmer skeleton-badge"></div>
+                <div class="skeleton-shimmer skeleton-circle"></div>
+                <div class="skeleton-shimmer skeleton-line"></div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="empty-state tw-text-center tw-py-16 tw-px-4 {% if initial_data['items'] %}tw-hidden{% endif %}">
+        <div class="tw-text-5xl tw-mb-3 tw-opacity-40"><i class="bi bi-search"></i></div>
+        <h3 class="tw-text-xl tw-font-bold tw-mb-2">No Pokémon Matched Your Filters</h3>
+        <p class="tw-text-sm tw-opacity-70 tw-mb-4">
+            Try adjusting or clearing your search query, type, generation, or other filters.
+        </p>
+        <button type="button" id="resetFiltersBtn" class="btn btn-danger tw-rounded-full tw-px-5 tw-font-semibold">
+            <i class="bi bi-arrow-counterclockwise me-1"></i>Reset All Filters
+        </button>
+    </div>
+
+    <!-- Responsive Bootstrap 5 Grid: Strictly 20 cards per page -->
+    <div id="pokemonGrid" class="row g-4">
+        {% for p in initial_data['items'] %}
+        <div class="col-12 col-sm-6 col-lg-3" data-aos="fade-up" data-aos-delay="{{ (loop.index0 % 4) * 70 }}">
+            <div class="poke-card-scene" style="--type-color: {{ p.primary_color }};" tabindex="0" role="button" aria-label="{{ p.display_name }} card. Activate to flip for details.">
+                <div class="poke-card-inner">
+                    <!-- FRONT FACE: Official Artwork, #ID, and Name ONLY -->
+                    <div class="poke-card-face poke-card-front">
+                        <div class="poke-card-watermark" aria-hidden="true"></div>
+                        <div class="d-flex justify-content-between align-items-center tw-w-full">
+                            <span class="poke-id-pill tw-font-mono">{{ p.formatted_id }}</span>
+                            {% if p.is_legendary %}
+                            <span class="poke-rare-dot" title="Legendary Pokémon"><i class="bi bi-star-fill"></i></span>
+                            {% elif p.is_mythical %}
+                            <span class="poke-rare-dot" title="Mythical Pokémon"><i class="bi bi-gem"></i></span>
+                            {% endif %}
+                        </div>
+
+                        <div class="poke-artwork-wrap">
+                            <img
+                                src="{{ p.artwork_url }}"
+                                alt="{{ p.display_name }}"
+                                class="poke-artwork-img"
+                                loading="lazy"
+                            />
+                        </div>
+
+                        <div class="tw-text-center tw-w-full">
+                            <h2 class="poke-card-name tw-mb-0">{{ p.display_name }}</h2>
+                        </div>
+                    </div>
+
+                    <!-- BACK FACE: Types, Height/Weight, Main Stats (HP/Atk/Def), Description & CTA -->
+                    <div class="poke-card-face poke-card-back">
+                        <div class="d-flex justify-content-between align-items-start tw-gap-2 tw-mb-2">
+                            <h3 class="poke-back-name tw-mb-0">{{ p.display_name }}</h3>
+                            <span class="poke-id-pill tw-font-mono tw-text-xs">{{ p.formatted_id }}</span>
+                        </div>
+
+                        <!-- Type Badges -->
+                        <div class="d-flex flex-wrap tw-gap-1.5 tw-mb-2.5">
+                            {% for t in p.types %}
+                            <span class="type-badge type-badge-sm" style="--badge-bg: {{ t.color }};">
+                                {{ t.display_name }}
+                            </span>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Physical Metrics -->
+                        <div class="poke-back-metrics tw-mb-2.5">
+                            <div>
+                                <span class="metric-label">Height</span>
+                                <span class="metric-val tw-font-mono">{{ "%.1f"|format(p.height) }} m</span>
+                            </div>
+                            <div class="metric-divider"></div>
+                            <div>
+                                <span class="metric-label">Weight</span>
+                                <span class="metric-val tw-font-mono">{{ "%.1f"|format(p.weight) }} kg</span>
+                            </div>
+                        </div>
+
+                        <!-- Main Base Stats (HP / Attack / Defense) -->
+                        <div class="poke-mini-stats tw-mb-2.5">
+                            {% for label, val, color in [('HP', p.stats.hp, '#22C55E'), ('ATK', p.stats.attack, '#F97316'), ('DEF', p.stats.defense, '#3B82F6')] %}
+                            <div class="mini-stat-row">
+                                <span class="mini-stat-label tw-font-mono">{{ label }}</span>
+                                <div class="mini-stat-track">
+                                    <div class="mini-stat-fill" style="width: {{ [((val / 180) * 100)|round(1), 100]|min }}%; background-color: {{ color }};"></div>
+                                </div>
+                                <span class="mini-stat-num tw-font-mono">{{ val }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Short Pokédex Description -->
+                        <p class="poke-back-desc tw-mb-3">{{ p.flavor_text }}</p>
+
+                        <!-- Clickable CTA Button -->
+                        <a
+                            href="{{ url_for('pokemon_detail', pokemon_id=p.id) }}"
+                            class="poke-details-btn tw-mt-auto tw-w-full"
+                        >
+                            More Details <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Numbered Pagination Bar (20 Pokémon per page) -->
+    <nav
+        id="paginationWrapper"
+        class="pokedex-pagination-bar tw-mt-10 {% if initial_data['total'] == 0 %}tw-hidden{% endif %}"
+        aria-label="Pokémon pagination"
+    >
+        <div class="d-flex flex-column align-items-center tw-gap-3">
+            <ul id="paginationList" class="pokedex-pagination-list">
+                <!-- Populated & updated dynamically by main.js -->
+            </ul>
+
+            <div class="d-flex flex-wrap align-items-center justify-content-center tw-gap-3 tw-text-xs tw-opacity-75">
+                <span id="pageMeta" class="tw-font-mono tw-font-semibold">
+                    Page {{ initial_data['page'] }} of {{ initial_data['total_pages'] }} • 20 per page
+                </span>
+
+                <form id="jumpPageForm" class="d-inline-flex align-items-center tw-gap-1.5">
+                    <label for="jumpPageInput" class="mb-0 tw-font-semibold">Go to page</label>
+                    <input
+                        id="jumpPageInput"
+                        type="number"
+                        min="1"
+                        max="{{ initial_data['total_pages'] }}"
+                        value="{{ initial_data['page'] }}"
+                        class="form-control form-control-sm pokedex-jump-input tw-font-mono"
+                        aria-label="Jump to page number"
+                    />
+                    <button type="submit" class="btn btn-sm btn-outline-danger tw-rounded-full tw-px-2.5 tw-font-bold">
+                        Go
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+</section>
+
+<!-- Floating Back-to-Top Button -->
+<button type="button" id="backToTopBtn" class="back-to-top-btn" aria-label="Back to top" title="Back to top">
+    <i class="bi bi-arrow-up"></i>
+</button>
+
+<!-- Hydrate initial pagination state for main.js -->
+<script id="initialPokedexState" type="application/json">
+    {{ {
+        "page": initial_data['page'],
+        "limit": initial_data['limit'],
+        "total": initial_data['total'],
+        "totalPages": initial_data['total_pages'],
+        "startIndex": initial_data['start_index'],
+        "endIndex": initial_data['end_index']
+    } | tojson }}
+</script>
+{% endblock %}

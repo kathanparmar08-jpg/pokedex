@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Pokédex — National Dex (Gen I–IX){% endblock %}</title>
+
+    <!-- Prevent dark-mode flicker before paint -->
+    <script>
+        (function () {
+            const saved = localStorage.getItem('pokedex-theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const theme = saved || (prefersDark ? 'dark' : 'light');
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+                document.documentElement.setAttribute('data-bs-theme', 'dark');
+            }
+        })();
+    </script>
+
+    <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <!-- Bootstrap 5.3 CSS & Icons (used for Grid, Navbar, Modals, Tables) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+
+    <!-- Tailwind CSS via CDN configured to avoid clashes with Bootstrap 5:
+         - preflight: false preserves Bootstrap's reboot/base styles
+         - prefix: 'tw-' ensures zero class name collisions (.collapse, .container, .shadow, etc.) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            prefix: 'tw-',
+            darkMode: 'class',
+            corePlugins: {
+                preflight: false,
+            },
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        pokedex: {
+                            red: '#DC2626',
+                            crimson: '#B91C1C',
+                            surface: '#0F172A',
+                        },
+                    },
+                },
+            },
+        };
+    </script>
+
+    <!-- AOS (Animate On Scroll) CSS -->
+    <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+
+    <!-- Custom Styles (including 3D Flip Card CSS) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="tw-font-sans tw-min-h-screen tw-flex tw-flex-col">
+
+    <!-- Sticky Bootstrap 5 Navbar -->
+    <nav class="navbar navbar-expand-lg sticky-top pokedex-navbar">
+        <div class="container">
+            <!-- Brand Logo -->
+            <a class="navbar-brand d-flex align-items-center tw-gap-2.5 tw-font-extrabold tw-tracking-tight" href="{{ url_for('index') }}">
+                <span class="pokeball-logo" aria-hidden="true">
+                    <svg viewBox="0 0 100 100" width="32" height="32">
+                        <circle cx="50" cy="50" r="46" fill="#FFFFFF" stroke="#1E293B" stroke-width="6"/>
+                        <path d="M 4 50 A 46 46 0 0 1 96 50 Z" fill="#EF4444" stroke="#1E293B" stroke-width="6"/>
+                        <line x1="4" y1="50" x2="96" y2="50" stroke="#1E293B" stroke-width="7"/>
+                        <circle cx="50" cy="50" r="14" fill="#FFFFFF" stroke="#1E293B" stroke-width="6"/>
+                        <circle cx="50" cy="50" r="5" fill="#94A3B8"/>
+                    </svg>
+                </span>
+                <span class="tw-text-xl tw-text-white">Pokédex</span>
+                <span class="badge rounded-pill text-bg-light tw-text-[11px] tw-font-bold tw-text-red-600">GEN I–IX</span>
+            </a>
+
+            <!-- Mobile Toggler -->
+            <button class="navbar-toggler border-0 text-white" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#pokedexNav" aria-controls="pokedexNav" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                <i class="bi bi-list tw-text-2xl"></i>
+            </button>
+
+            <div class="collapse navbar-collapse" id="pokedexNav">
+                <!-- Live Search Bar -->
+                <form id="navbarSearchForm" class="d-flex mx-lg-auto my-3 my-lg-0 tw-w-full lg:tw-max-w-md tw-relative" role="search">
+                    <i class="bi bi-search tw-absolute tw-left-3.5 tw-top-1/2 -tw-translate-y-1/2 tw-text-slate-400 tw-pointer-events-none"></i>
+                    <input
+                        id="searchInput"
+                        class="form-control pokedex-search-input tw-pl-10 tw-pr-9"
+                        type="search"
+                        placeholder="Search by name or #ID (e.g. Pikachu, #025)..."
+                        aria-label="Search Pokémon"
+                        autocomplete="off"
+                    />
+                    <button
+                        type="button"
+                        id="clearSearchBtn"
+                        class="btn btn-sm tw-absolute tw-right-1.5 tw-top-1/2 -tw-translate-y-1/2 tw-text-slate-400 hover:tw-text-slate-700 tw-hidden"
+                        aria-label="Clear search"
+                    >
+                        <i class="bi bi-x-circle-fill"></i>
+                    </button>
+                </form>
+
+                <!-- Utility Buttons -->
+                <div class="d-flex align-items-center tw-gap-2 ms-lg-3">
+                    <button
+                        type="button"
+                        class="btn btn-sm btn-outline-light tw-rounded-full tw-px-3 tw-font-semibold"
+                        data-bs-toggle="modal"
+                        data-bs-target="#pokedexInfoModal"
+                    >
+                        <i class="bi bi-grid-3x3-gap me-1"></i>Type Guide
+                    </button>
+
+                    <button
+                        type="button"
+                        id="themeToggleBtn"
+                        class="btn btn-sm btn-light tw-rounded-full tw-w-9 tw-h-9 d-flex align-items-center justify-content-center"
+                        title="Toggle dark mode"
+                        aria-label="Toggle dark mode"
+                    >
+                        <i class="bi bi-moon-stars-fill" id="themeToggleIcon"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="tw-flex-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="pokedex-footer tw-mt-16 tw-py-8">
+        <div class="container d-flex flex-column flex-md-row align-items-center justify-content-between tw-gap-3 tw-text-sm">
+            <div class="d-flex align-items-center tw-gap-2">
+                <span class="tw-font-bold">Pokédex</span>
+                <span class="tw-opacity-70">• National Dex (Gen I–IX)</span>
+            </div>
+            <div class="tw-opacity-75">
+                Data &amp; official artwork powered by
+                <a href="https://pokeapi.co/" target="_blank" rel="noopener noreferrer" class="tw-underline hover:tw-opacity-100">PokéAPI</a>.
+                Pokémon &copy; Nintendo / Creatures Inc. / GAME FREAK inc.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 Modal: Type Guide & Controls -->
+    <div class="modal fade" id="pokedexInfoModal" tabindex="-1" aria-labelledby="pokedexInfoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content tw-rounded-2xl tw-overflow-hidden tw-border-0">
+                <div class="modal-header pokedex-modal-header text-white">
+                    <h5 class="modal-title tw-font-bold" id="pokedexInfoModalLabel">
+                        <i class="bi bi-compass me-2"></i>Pokédex Guide &amp; Type Legend
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body tw-p-6">
+                    <p class="tw-text-sm tw-opacity-80 tw-mb-4">
+                        Hover over any Pokémon card on desktop — or tap a card on touch devices — to smoothly flip it in 3D and inspect quick stats, height, weight, and Pokédex lore. Click <strong>More Details</strong> to open its full battle &amp; evolution profile.
+                    </p>
+                    <h6 class="tw-font-bold tw-text-xs tw-uppercase tw-tracking-wider tw-opacity-70 tw-mb-3">
+                        All 18 Pokémon Types
+                    </h6>
+                    <div class="d-flex flex-wrap tw-gap-2">
+                        {% for t_name, t_hex in type_colors.items() %}
+                        <span class="type-badge" style="--badge-bg: {{ t_hex }};">
+                            {{ t_name|title }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary tw-rounded-full tw-px-4" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- AOS JS -->
+    <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+
+    <!-- Application Script -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,1125 @@
+/* =============================================================================
+   Pokédex Custom Stylesheet
+   - Theme variables (Light & Dark Mode)
+   - Navbar, Filter Chips & Skeleton Loaders
+   - 3D Lift-and-Flip Pokémon Cards (Perspective + Preserve-3D + Backface Hidden)
+   - Detail Page (Hero, Animated Stat Bars, Matchups, Evolution Chain, Moves)
+   ============================================================================= */
+
+:root {
+    --bg-page: #F4F6FA;
+    --bg-surface: #FFFFFF;
+    --bg-surface-subtle: #F1F5F9;
+    --text-primary: #0F172A;
+    --text-secondary: #475569;
+    --border-subtle: rgba(15, 23, 42, 0.08);
+    --card-shadow: 0 8px 24px -6px rgba(15, 23, 42, 0.12);
+    --card-shadow-hover: 0 26px 44px -10px rgba(15, 23, 42, 0.28);
+    --nav-bg: linear-gradient(135deg, #DC2626 0%, #B91C1C 100%);
+}
+
+html.dark {
+    --bg-page: #0B1120;
+    --bg-surface: #111827;
+    --bg-surface-subtle: #1E293B;
+    --text-primary: #F8FAFC;
+    --text-secondary: #94A3B8;
+    --border-subtle: rgba(248, 250, 252, 0.10);
+    --card-shadow: 0 10px 26px -6px rgba(0, 0, 0, 0.45);
+    --card-shadow-hover: 0 28px 50px -10px rgba(0, 0, 0, 0.72);
+    --nav-bg: linear-gradient(135deg, #991B1B 0%, #7F1D1D 100%);
+}
+
+body {
+    background-color: var(--bg-page);
+    color: var(--text-primary);
+    transition: background-color 0.25s ease, color 0.25s ease;
+    overflow-x: hidden;
+}
+
+/* -----------------------------------------------------------------------------
+   Navbar & Search
+   ----------------------------------------------------------------------------- */
+.pokedex-navbar {
+    background: var(--nav-bg);
+    box-shadow: 0 4px 20px rgba(185, 28, 28, 0.25);
+    padding-top: 0.7rem;
+    padding-bottom: 0.7rem;
+}
+
+.pokeball-logo {
+    display: inline-flex;
+    transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.navbar-brand:hover .pokeball-logo {
+    transform: rotate(180deg);
+}
+
+.pokedex-search-input {
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-color: rgba(255, 255, 255, 0.96);
+    color: #0F172A;
+    font-size: 0.9rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.pokedex-search-input:focus {
+    background-color: #FFFFFF;
+    color: #0F172A;
+    border-color: #FCA5A5;
+    box-shadow: 0 0 0 4px rgba(254, 202, 202, 0.35);
+}
+
+.pokedex-modal-header {
+    background: var(--nav-bg);
+}
+
+.pokedex-footer {
+    background-color: var(--bg-surface);
+    border-top: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+}
+
+/* -----------------------------------------------------------------------------
+   Hero & Type Filter Chips
+   ----------------------------------------------------------------------------- */
+.pokedex-hero {
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.pokedex-sort-select {
+    background-color: var(--bg-surface-subtle);
+    border-color: var(--border-subtle);
+    color: var(--text-primary);
+    min-width: 195px;
+    cursor: pointer;
+}
+
+.type-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.38rem 0.85rem;
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    border: 1.5px solid var(--border-subtle);
+    background-color: var(--bg-surface-subtle);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: transform 0.18s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.type-chip:hover {
+    transform: translateY(-2px);
+    border-color: var(--chip-color, #DC2626);
+}
+
+.type-chip.active {
+    background-color: var(--chip-color, #DC2626);
+    border-color: var(--chip-color, #DC2626);
+    color: #FFFFFF;
+    box-shadow: 0 6px 16px -4px color-mix(in srgb, var(--chip-color, #DC2626) 60%, transparent);
+}
+
+.type-chip.active .type-chip-dot {
+    background-color: #FFFFFF !important;
+}
+
+.type-chip-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+    flex-shrink: 0;
+}
+
+/* Advanced Filters Bar */
+.advanced-filters-box {
+    background-color: var(--bg-surface-subtle);
+    border: 1px solid var(--border-subtle);
+    border-radius: 1rem;
+    padding: 0.9rem 1rem;
+}
+
+.filter-label {
+    display: block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+}
+
+.pokedex-filter-select {
+    background-color: var(--bg-surface);
+    border-color: var(--border-subtle);
+    color: var(--text-primary);
+    border-radius: 0.65rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pokedex-filter-select:focus {
+    border-color: #DC2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.16);
+}
+
+.pokedex-filter-select.is-filtered {
+    border-color: #DC2626;
+    background-color: color-mix(in srgb, #DC2626 8%, var(--bg-surface));
+}
+
+.clear-filters-btn {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.22rem 0.7rem;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+    transition: border-color 0.18s ease, color 0.18s ease;
+}
+
+.clear-filters-btn:hover {
+    border-color: #DC2626;
+    color: #DC2626;
+}
+
+/* Type Badges (used across cards, detail page, moves table, and modal) */
+.type-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.28rem 0.8rem;
+    border-radius: 9999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: #FFFFFF;
+    background-color: var(--badge-bg, #A8A77A);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.14);
+}
+
+.type-badge-sm {
+    padding: 0.16rem 0.62rem;
+    font-size: 0.7rem;
+}
+
+.type-badge-lg {
+    padding: 0.38rem 1.05rem;
+    font-size: 0.86rem;
+    transition: transform 0.18s ease, filter 0.18s ease;
+}
+
+.type-badge-lg:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.06);
+    color: #FFFFFF;
+}
+
+/* =============================================================================
+   MAIN EFFECT: 3D LIFT & FLIP POKÉMON CARD
+   -----------------------------------------------------------------------------
+   How the 3D flip works:
+   1. `.poke-card-scene` establishes the 3D viewing depth (`perspective: 1200px`)
+      and keeps a stationary hover/tap hit-box so hovering near the card edge
+      never causes jitter.
+   2. `.poke-card-inner` holds both faces in shared 3D space
+      (`transform-style: preserve-3d`) and animates smoothly over 0.6s using a
+      cubic-bezier easing curve.
+   3. On desktop hover (`@media (hover: hover)`) or touch/keyboard `.is-flipped`,
+      `.poke-card-inner` lifts upward (`translateY(-10px)`) and rotates 180deg
+      around the Y-axis (`rotateY(180deg)`) while deepening the drop shadow.
+   4. Both `.poke-card-front` and `.poke-card-back` hide their reverse side via
+      `backface-visibility: hidden`. The back face starts pre-rotated 180deg so
+      it appears right-side-up once flipped.
+   5. Pointer events switch on flip so the "More Details" link on the back face
+      is cleanly clickable without front-face interference.
+   ============================================================================= */
+
+.poke-card-scene {
+    position: relative;
+    width: 100%;
+    height: 356px;
+    perspective: 1200px;
+    cursor: pointer;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.poke-card-scene:focus-visible .poke-card-face {
+    outline: 3px solid var(--type-color, #DC2626);
+    outline-offset: 2px;
+}
+
+.poke-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    -webkit-transform-style: preserve-3d;
+    transition: transform 0.62s cubic-bezier(0.23, 1, 0.32, 1);
+    will-change: transform;
+}
+
+/* Hover state on pointer/desktop devices: lift + 3D flip */
+@media (hover: hover) and (pointer: fine) {
+    .poke-card-scene:hover .poke-card-inner {
+        transform: translateY(-10px) rotateY(180deg);
+    }
+
+    .poke-card-scene:hover .poke-card-back {
+        box-shadow: var(--card-shadow-hover),
+                    0 0 0 2px color-mix(in srgb, var(--type-color, #A8A77A) 75%, transparent);
+        pointer-events: auto;
+        z-index: 3;
+    }
+
+    .poke-card-scene:hover .poke-card-front {
+        pointer-events: none;
+        z-index: 1;
+    }
+}
+
+/* Explicit flipped state (used for touch tap and keyboard toggle) */
+.poke-card-scene.is-flipped .poke-card-inner {
+    transform: translateY(-10px) rotateY(180deg);
+}
+
+.poke-card-scene.is-flipped .poke-card-back {
+    box-shadow: var(--card-shadow-hover),
+                0 0 0 2px color-mix(in srgb, var(--type-color, #A8A77A) 75%, transparent);
+    pointer-events: auto;
+    z-index: 3;
+}
+
+.poke-card-scene.is-flipped .poke-card-front {
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Shared properties for Front and Back faces */
+.poke-card-face {
+    position: absolute;
+    inset: 0;
+    border-radius: 1.25rem;
+    padding: 1.1rem;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    border: 2px solid color-mix(in srgb, var(--type-color, #A8A77A) 45%, transparent);
+    box-shadow: var(--card-shadow);
+    transition: box-shadow 0.45s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* FRONT FACE: Primary-type tinted background, #ID, official artwork, and name */
+.poke-card-front {
+    transform: rotateY(0deg) translateZ(1px);
+    background: linear-gradient(
+        160deg,
+        color-mix(in srgb, var(--type-color, #A8A77A) 22%, var(--bg-surface)) 0%,
+        color-mix(in srgb, var(--type-color, #A8A77A) 8%, var(--bg-surface)) 55%,
+        var(--bg-surface) 100%
+    );
+    justify-content: space-between;
+    align-items: center;
+    z-index: 2;
+}
+
+.poke-card-watermark {
+    position: absolute;
+    width: 190px;
+    height: 190px;
+    right: -46px;
+    bottom: -46px;
+    border-radius: 50%;
+    border: 18px solid color-mix(in srgb, var(--type-color, #A8A77A) 15%, transparent);
+    pointer-events: none;
+}
+
+.poke-card-watermark::after {
+    content: "";
+    position: absolute;
+    width: 52px;
+    height: 52px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: 12px solid color-mix(in srgb, var(--type-color, #A8A77A) 15%, transparent);
+}
+
+.poke-id-pill {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 9999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    background-color: color-mix(in srgb, var(--type-color, #A8A77A) 18%, var(--bg-surface));
+    color: var(--text-primary);
+    border: 1px solid color-mix(in srgb, var(--type-color, #A8A77A) 32%, transparent);
+}
+
+.poke-rare-dot {
+    color: #F59E0B;
+    font-size: 0.9rem;
+}
+
+.poke-artwork-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.5rem 0;
+    position: relative;
+    z-index: 1;
+}
+
+.poke-artwork-img {
+    width: 168px;
+    height: 168px;
+    object-fit: contain;
+    filter: drop-shadow(0 12px 16px rgba(15, 23, 42, 0.20));
+    transition: transform 0.35s ease;
+}
+
+.poke-card-name {
+    font-size: 1.2rem;
+    font-weight: 800;
+    letter-spacing: -0.015em;
+    color: var(--text-primary);
+    position: relative;
+    z-index: 1;
+}
+
+/* BACK FACE: Pre-rotated 180deg, reveals summary details + clickable CTA */
+.poke-card-back {
+    transform: rotateY(180deg) translateZ(1px);
+    background: linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--type-color, #A8A77A) 16%, var(--bg-surface)) 0%,
+        var(--bg-surface) 38%
+    );
+    border-color: color-mix(in srgb, var(--type-color, #A8A77A) 70%, transparent);
+    pointer-events: none; /* Enabled automatically when hovered or .is-flipped */
+    z-index: 1;
+}
+
+.poke-back-name {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.poke-back-metrics {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0.45rem 0.6rem;
+    border-radius: 0.75rem;
+    background-color: var(--bg-surface-subtle);
+    border: 1px solid var(--border-subtle);
+}
+
+.poke-back-metrics > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.2;
+}
+
+.metric-label {
+    font-size: 0.64rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.metric-val {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.metric-divider {
+    width: 1px;
+    height: 24px;
+    background-color: var(--border-subtle);
+}
+
+/* Mini stats bars on card back */
+.poke-mini-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.mini-stat-row {
+    display: grid;
+    grid-template-columns: 32px 1fr 28px;
+    align-items: center;
+    gap: 0.45rem;
+}
+
+.mini-stat-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.mini-stat-track {
+    height: 6px;
+    border-radius: 9999px;
+    background-color: var(--bg-surface-subtle);
+    overflow: hidden;
+}
+
+.mini-stat-fill {
+    height: 100%;
+    border-radius: 9999px;
+}
+
+.mini-stat-num {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-align: right;
+    color: var(--text-primary);
+}
+
+/* Clamped short Pokédex flavor text on card back */
+.poke-back-desc {
+    font-size: 0.74rem;
+    line-height: 1.44;
+    color: var(--text-secondary);
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* "More Details" CTA button on card back */
+.poke-details-btn,
+.poke-details-btn:link,
+.poke-details-btn:visited {
+    --bs-btn-bg: var(--type-color, #DC2626);
+    --bs-btn-hover-bg: color-mix(in srgb, var(--type-color, #DC2626) 84%, #000000);
+    --bs-btn-active-bg: color-mix(in srgb, var(--type-color, #DC2626) 78%, #000000);
+    --bs-btn-color: #FFFFFF;
+    --bs-btn-hover-color: #FFFFFF;
+    --bs-btn-active-color: #FFFFFF;
+    --bs-btn-border-color: transparent;
+    --bs-btn-hover-border-color: transparent;
+    --bs-btn-active-border-color: transparent;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    background-color: var(--type-color, #DC2626) !important;
+    color: #FFFFFF !important;
+    border: none !important;
+    border-radius: 0.75rem;
+    font-size: 0.84rem;
+    font-weight: 700;
+    padding: 0.52rem 0.9rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 6px 14px -4px color-mix(in srgb, var(--type-color, #DC2626) 65%, transparent);
+    transition: transform 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
+    text-decoration: none !important;
+    cursor: pointer;
+    position: relative;
+    z-index: 5;
+}
+
+.poke-details-btn:hover,
+.poke-details-btn:focus,
+.poke-details-btn:active {
+    background-color: color-mix(in srgb, var(--type-color, #DC2626) 84%, #000000) !important;
+    color: #FFFFFF !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px -3px color-mix(in srgb, var(--type-color, #DC2626) 75%, transparent);
+    text-decoration: none !important;
+    outline: none;
+}
+
+/* -----------------------------------------------------------------------------
+   Numbered Pagination Bar, Skeletons & Back to Top
+   ----------------------------------------------------------------------------- */
+.pokedex-pagination-bar {
+    padding: 0.5rem 0;
+}
+
+.pokedex-pagination-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+}
+
+.page-pill {
+    min-width: 40px;
+    height: 40px;
+    padding: 0 0.75rem;
+    border-radius: 9999px;
+    border: 1.5px solid var(--border-subtle);
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+    transition: transform 0.16s ease, background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.page-pill:hover:not(:disabled):not(.active) {
+    transform: translateY(-2px);
+    border-color: #DC2626;
+    color: #DC2626;
+}
+
+.page-pill.active {
+    background: var(--nav-bg);
+    border-color: transparent;
+    color: #FFFFFF;
+    box-shadow: 0 6px 16px -4px rgba(220, 38, 38, 0.5);
+    cursor: default;
+}
+
+.page-pill:disabled {
+    opacity: 0.42;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.page-ellipsis {
+    padding: 0 0.3rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    user-select: none;
+}
+
+.pokedex-jump-input {
+    width: 68px;
+    text-align: center;
+    border-radius: 9999px;
+    background-color: var(--bg-surface);
+    border-color: var(--border-subtle);
+    color: var(--text-primary);
+}
+
+.skeleton-card {
+    height: 356px;
+    border-radius: 1.25rem;
+    padding: 1.25rem;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.skeleton-shimmer {
+    background: linear-gradient(
+        90deg,
+        var(--bg-surface-subtle) 25%,
+        color-mix(in srgb, var(--bg-surface-subtle) 65%, var(--bg-surface)) 50%,
+        var(--bg-surface-subtle) 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.4s infinite linear;
+    border-radius: 9999px;
+}
+
+.skeleton-badge {
+    width: 64px;
+    height: 24px;
+    align-self: flex-start;
+}
+
+.skeleton-circle {
+    width: 150px;
+    height: 150px;
+}
+
+.skeleton-line {
+    width: 65%;
+    height: 22px;
+}
+
+@keyframes shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.back-to-top-btn {
+    position: fixed;
+    right: 1.5rem;
+    bottom: 1.5rem;
+    width: 46px;
+    height: 46px;
+    border-radius: 9999px;
+    border: none;
+    background: var(--nav-bg);
+    color: #FFFFFF;
+    font-size: 1.15rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 10px 24px rgba(185, 28, 28, 0.4);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(14px);
+    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s ease;
+    z-index: 1030;
+    cursor: pointer;
+}
+
+.back-to-top-btn.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* =============================================================================
+   DETAIL PAGE STYLES
+   ============================================================================= */
+.detail-nav-btn {
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    border: 1px solid var(--border-subtle);
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.06);
+    transition: transform 0.18s ease, border-color 0.18s ease;
+}
+
+.detail-nav-btn:hover {
+    transform: translateY(-1px);
+    border-color: var(--type-color, #DC2626);
+    color: var(--text-primary);
+}
+
+.detail-hero-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1.5rem;
+    padding: 2rem;
+    background: linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--type-color, #A8A77A) 22%, var(--bg-surface)) 0%,
+        color-mix(in srgb, var(--type-color, #A8A77A) 7%, var(--bg-surface)) 50%,
+        var(--bg-surface) 100%
+    );
+    border: 2px solid color-mix(in srgb, var(--type-color, #A8A77A) 38%, transparent);
+    box-shadow: var(--card-shadow);
+}
+
+.detail-hero-watermark {
+    position: absolute;
+    width: 380px;
+    height: 380px;
+    left: -70px;
+    top: -70px;
+    border-radius: 50%;
+    border: 34px solid color-mix(in srgb, var(--type-color, #A8A77A) 12%, transparent);
+    pointer-events: none;
+}
+
+.detail-artwork-stage {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.detail-artwork-img {
+    width: 100%;
+    max-width: 310px;
+    height: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 20px 28px rgba(15, 23, 42, 0.25));
+    animation: floatSlow 4.5s ease-in-out infinite;
+}
+
+@keyframes floatSlow {
+    0%, 100% { transform: translateY(0px); }
+    50%      { transform: translateY(-10px); }
+}
+
+.detail-genus-pill {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.detail-flavor-box {
+    margin: 0;
+    padding: 0.9rem 1.1rem;
+    border-radius: 0.9rem;
+    background-color: color-mix(in srgb, var(--bg-surface) 75%, transparent);
+    border-left: 4px solid var(--type-color, #DC2626);
+    font-size: 0.98rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+}
+
+.info-tile {
+    background-color: color-mix(in srgb, var(--bg-surface) 80%, var(--bg-surface-subtle));
+    border: 1px solid var(--border-subtle);
+    border-radius: 0.9rem;
+    padding: 0.7rem 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.info-tile-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+}
+
+.info-tile-value {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.ability-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 9999px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    background-color: var(--bg-surface-subtle);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+}
+
+.ability-pill-hidden {
+    border-style: dashed;
+    border-color: #F59E0B;
+    background-color: color-mix(in srgb, #F59E0B 14%, var(--bg-surface));
+}
+
+.hidden-tag {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.1rem 0.45rem;
+    border-radius: 9999px;
+    background-color: #F59E0B;
+    color: #FFFFFF;
+}
+
+/* Detail Panels */
+.detail-panel {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 1.35rem;
+    padding: 1.5rem;
+    box-shadow: var(--card-shadow);
+}
+
+.detail-section-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+/* Base Stat Bars */
+.stat-total-pill {
+    padding: 0.28rem 0.8rem;
+    border-radius: 9999px;
+    font-size: 0.82rem;
+    background-color: var(--bg-surface-subtle);
+    border: 1px solid var(--border-subtle);
+}
+
+.stat-bar-row {
+    display: grid;
+    grid-template-columns: 78px 40px 1fr;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.stat-bar-label {
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+.stat-bar-value {
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-align: right;
+    color: var(--text-primary);
+}
+
+.stat-bar-track {
+    height: 11px;
+    border-radius: 9999px;
+    background-color: var(--bg-surface-subtle);
+    overflow: hidden;
+}
+
+.stat-bar-fill {
+    height: 100%;
+    border-radius: 9999px;
+    transition: width 0.95s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Type Matchups */
+.matchup-group-title {
+    font-size: 0.74rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.5rem;
+}
+
+.matchup-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.25rem 0.4rem 0.25rem 0.72rem;
+    border-radius: 9999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    background-color: var(--badge-bg, #A8A77A);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);
+}
+
+.matchup-mult {
+    background-color: rgba(0, 0, 0, 0.28);
+    padding: 0.1rem 0.45rem;
+    border-radius: 9999px;
+    font-size: 0.72rem;
+}
+
+/* Gender Ratio Bar */
+.gender-bar-track {
+    height: 10px;
+    border-radius: 9999px;
+    overflow: hidden;
+    display: flex;
+    background-color: var(--bg-surface-subtle);
+}
+
+.gender-bar-male {
+    background-color: #3B82F6;
+}
+
+.gender-bar-female {
+    background-color: #EC4899;
+}
+
+.egg-group-pill {
+    padding: 0.2rem 0.65rem;
+    border-radius: 9999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+}
+
+/* Evolution Chain Visuals */
+.evo-linear-flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.evo-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 1rem 1.25rem;
+    border-radius: 1.15rem;
+    text-decoration: none;
+    color: var(--text-primary);
+    background-color: var(--bg-surface-subtle);
+    border: 2px solid transparent;
+    min-width: 140px;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.evo-node:hover {
+    transform: translateY(-4px);
+    border-color: var(--type-color, #DC2626);
+    color: var(--text-primary);
+    box-shadow: 0 10px 22px -8px rgba(15, 23, 42, 0.2);
+}
+
+.evo-node.is-current {
+    border-color: var(--type-color, #DC2626);
+    background-color: color-mix(in srgb, var(--type-color, #DC2626) 14%, var(--bg-surface));
+}
+
+.evo-node-img {
+    width: 96px;
+    height: 96px;
+    object-fit: contain;
+    filter: drop-shadow(0 8px 12px rgba(15, 23, 42, 0.18));
+}
+
+.evo-node-compact {
+    min-width: 108px;
+    padding: 0.7rem 0.85rem;
+}
+
+.evo-node-img-sm {
+    width: 68px;
+    height: 68px;
+    object-fit: contain;
+}
+
+.evo-connector {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0 0.25rem;
+}
+
+.evo-arrow-icon {
+    font-size: 1.35rem;
+    color: var(--type-color, #DC2626);
+}
+
+.evo-condition-pill {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.2rem 0.65rem;
+    border-radius: 9999px;
+    background-color: var(--bg-surface-subtle);
+    border: 1px solid var(--border-subtle);
+    text-align: center;
+    white-space: nowrap;
+}
+
+.evo-branch-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.85rem;
+    border-radius: 1.1rem;
+    background-color: color-mix(in srgb, var(--bg-surface-subtle) 55%, var(--bg-surface));
+    border: 1px solid var(--border-subtle);
+}
+
+/* Moves Table */
+.pokedex-moves-table th {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-secondary);
+    border-bottom-width: 2px;
+}
+
+.move-class-pill {
+    display: inline-block;
+    padding: 0.16rem 0.55rem;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #FFFFFF;
+}
+
+.move-class-physical { background-color: #EA580C; }
+.move-class-special  { background-color: #4F46E5; }
+.move-class-status   { background-color: #64748B; }
+
+/* -----------------------------------------------------------------------------
+   Pokédex Historical Lore Archive Cards
+   ----------------------------------------------------------------------------- */
+.lore-card {
+    height: 100%;
+    background-color: var(--bg-surface-subtle);
+    border: 1px solid var(--border-subtle);
+    border-radius: 1rem;
+    padding: 1.05rem 1.15rem;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.lore-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--type-color, #DC2626);
+    box-shadow: 0 8px 18px -6px rgba(15, 23, 42, 0.12);
+}
+
+.lore-version-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.22rem 0.7rem;
+    border-radius: 9999px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #FFFFFF;
+    background-color: var(--badge-bg, #DC2626);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+    letter-spacing: 0.02em;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.lore-era-tag {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.lore-card-text {
+    font-size: 0.86rem;
+    line-height: 1.55;
+    color: var(--text-primary);
+    opacity: 0.92;
+}
+
+@media (max-width: 576px) {
+    .detail-hero-card {
+        padding: 1.25rem;
+    }
+
+    .evo-linear-flow {
+        flex-direction: column;
+    }
+
+    .evo-linear-flow .evo-arrow-icon {
+        transform: rotate(90deg);
+    }
+}

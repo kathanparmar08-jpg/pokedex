@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}{{ error_code or 404 }} — Pokédex{% endblock %}
+
+{% block content %}
+<div class="container tw-py-20 tw-text-center">
+    <div class="tw-max-w-md tw-mx-auto detail-panel tw-py-12 tw-px-6">
+        <div class="tw-font-mono tw-text-6xl tw-font-extrabold tw-text-red-600 dark:tw-text-red-400 tw-mb-3">
+            {{ error_code or 404 }}
+        </div>
+        <h1 class="tw-text-2xl tw-font-bold tw-mb-2">
+            {{ error_title or "Wild MissingNo. Appeared!" }}
+        </h1>
+        <p class="tw-text-sm tw-opacity-75 tw-mb-6">
+            We couldn't find that Pokémon in our National Pokédex.
+        </p>
+        <a href="{{ url_for('index') }}" class="btn btn-danger tw-rounded-full tw-px-6 tw-font-bold">
+            <i class="bi bi-house-door me-1.5"></i>Return to Pokédex
+        </a>
+    </div>
+</div>
+{% endblock %}

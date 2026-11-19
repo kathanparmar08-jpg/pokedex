@@ -1,0 +1,474 @@
+{% extends "base.html" %}
+
+{% block title %}{{ pokemon.display_name }} ({{ pokemon.formatted_id }}) — Pokédex{% endblock %}
+
+{% block content %}
+<div class="container tw-py-6 md:tw-py-8" style="--type-color: {{ pokemon.primary_color }};">
+
+    <!-- Top Navigation: Back to Pokédex + Previous / Next Pokémon -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between tw-gap-3 tw-mb-6">
+        <a href="{{ url_for('index') }}" class="btn detail-nav-btn tw-rounded-full tw-px-4 tw-font-semibold">
+            <i class="bi bi-arrow-left me-1.5"></i>Back to Pokédex
+        </a>
+
+        <div class="d-flex align-items-center tw-gap-2">
+            {% if pokemon.prev_pokemon %}
+            <a href="{{ url_for('pokemon_detail', pokemon_id=pokemon.prev_pokemon.id) }}"
+               class="btn detail-nav-btn tw-rounded-full tw-px-3.5 d-flex align-items-center tw-gap-2">
+                <i class="bi bi-chevron-left"></i>
+                <img src="{{ pokemon.prev_pokemon.artwork_url }}" alt="" class="tw-w-6 tw-h-6 tw-object-contain" />
+                <span class="tw-font-mono tw-text-xs tw-opacity-70">{{ pokemon.prev_pokemon.formatted_id }}</span>
+                <span class="d-none d-sm-inline tw-font-semibold tw-text-sm">{{ pokemon.prev_pokemon.display_name }}</span>
+            </a>
+            {% endif %}
+
+            {% if pokemon.next_pokemon %}
+            <a href="{{ url_for('pokemon_detail', pokemon_id=pokemon.next_pokemon.id) }}"
+               class="btn detail-nav-btn tw-rounded-full tw-px-3.5 d-flex align-items-center tw-gap-2">
+                <span class="d-none d-sm-inline tw-font-semibold tw-text-sm">{{ pokemon.next_pokemon.display_name }}</span>
+                <span class="tw-font-mono tw-text-xs tw-opacity-70">{{ pokemon.next_pokemon.formatted_id }}</span>
+                <img src="{{ pokemon.next_pokemon.artwork_url }}" alt="" class="tw-w-6 tw-h-6 tw-object-contain" />
+                <i class="bi bi-chevron-right"></i>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Hero Showcase Card -->
+    <section class="detail-hero-card tw-mb-6" data-aos="fade-up">
+        <div class="detail-hero-watermark" aria-hidden="true"></div>
+        <div class="row align-items-center g-4 tw-relative tw-z-10">
+            <!-- Artwork Column -->
+            <div class="col-12 col-lg-5 tw-text-center">
+                <div class="detail-artwork-stage">
+                    <img
+                        src="{{ pokemon.artwork_url }}"
+                        alt="{{ pokemon.display_name }} official artwork"
+                        class="detail-artwork-img"
+                    />
+                </div>
+            </div>
+
+            <!-- Summary Column -->
+            <div class="col-12 col-lg-7">
+                <div class="d-flex flex-wrap align-items-center tw-gap-2 tw-mb-2">
+                    <span class="poke-id-pill tw-font-mono tw-text-sm">{{ pokemon.formatted_id }}</span>
+                    <span class="detail-genus-pill">{{ pokemon.genus }}</span>
+                    {% if pokemon.is_legendary %}
+                    <span class="badge rounded-pill text-bg-warning tw-font-bold">
+                        <i class="bi bi-star-fill me-1"></i>Legendary
+                    </span>
+                    {% endif %}
+                    {% if pokemon.is_mythical %}
+                    <span class="badge rounded-pill text-bg-info tw-font-bold">
+                        <i class="bi bi-gem me-1"></i>Mythical
+                    </span>
+                    {% endif %}
+                </div>
+
+                <h1 class="tw-text-4xl md:tw-text-5xl tw-font-extrabold tw-tracking-tight tw-mb-3">
+                    {{ pokemon.display_name }}
+                </h1>
+
+                <!-- Type Badges -->
+                <div class="d-flex flex-wrap tw-gap-2 tw-mb-4">
+                    {% for t in pokemon.types %}
+                    <a href="{{ url_for('index', type=t.name) }}"
+                       class="type-badge type-badge-lg tw-no-underline"
+                       style="--badge-bg: {{ t.color }};">
+                        {{ t.display_name }}
+                    </a>
+                    {% endfor %}
+                </div>
+
+                <!-- Full Pokédex Description -->
+                <div class="detail-flavor-box tw-mb-5">
+                    <div class="d-flex align-items-center justify-content-between tw-mb-2">
+                        <span class="tw-text-xs tw-font-bold tw-uppercase tw-tracking-widest tw-opacity-70">
+                            <i class="bi bi-book-half me-1.5"></i>Comprehensive Field Lore
+                        </span>
+                        {% if pokemon.total_lore_entries > 0 %}
+                        <span class="badge rounded-pill text-bg-danger tw-text-[11px] tw-font-bold">
+                            {{ pokemon.total_lore_entries }} Game Editions
+                        </span>
+                        {% endif %}
+                    </div>
+                    <blockquote class="tw-mb-0 tw-leading-relaxed">
+                        <i class="bi bi-quote tw-opacity-40 me-1"></i>{{ pokemon.flavor_text }}
+                    </blockquote>
+                </div>
+
+                <!-- Physical & Profile Info Grid -->
+                <div class="row g-3">
+                    <div class="col-6 col-md-4">
+                        <div class="info-tile">
+                            <span class="info-tile-label"><i class="bi bi-rulers me-1"></i>Height</span>
+                            <span class="info-tile-value tw-font-mono">{{ "%.1f"|format(pokemon.height) }} m</span>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <div class="info-tile">
+                            <span class="info-tile-label"><i class="bi bi-speedometer2 me-1"></i>Weight</span>
+                            <span class="info-tile-value tw-font-mono">{{ "%.1f"|format(pokemon.weight) }} kg</span>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <div class="info-tile">
+                            <span class="info-tile-label"><i class="bi bi-lightning-charge me-1"></i>Base Exp</span>
+                            <span class="info-tile-value tw-font-mono">{{ pokemon.base_experience or '—' }}</span>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <div class="info-tile">
+                            <span class="info-tile-label"><i class="bi bi-tree me-1"></i>Habitat</span>
+                            <span class="info-tile-value">{{ pokemon.habitat }}</span>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <div class="info-tile">
+                            <span class="info-tile-label"><i class="bi bi-layers me-1"></i>Generation</span>
+                            <span class="info-tile-value">{{ pokemon.generation }}</span>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-4">
+                        <div class="info-tile">
+                            <span class="info-tile-label"><i class="bi bi-graph-up-arrow me-1"></i>Growth Rate</span>
+                            <span class="info-tile-value">{{ pokemon.growth_rate }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Abilities (highlighting hidden abilities) -->
+                <div class="tw-mt-4">
+                    <div class="info-tile-label tw-mb-2">
+                        <i class="bi bi-sparkles me-1"></i>Abilities
+                    </div>
+                    <div class="d-flex flex-wrap tw-gap-2">
+                        {% for ab in pokemon.abilities %}
+                        <span class="ability-pill {% if ab.is_hidden %}ability-pill-hidden{% endif %}">
+                            {{ ab.display_name }}
+                            {% if ab.is_hidden %}
+                            <span class="hidden-tag">Hidden</span>
+                            {% endif %}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Base Stats + Type Weaknesses/Resistances -->
+    <div class="row g-4 tw-mb-6">
+        <!-- Animated Base Stats -->
+        <div class="col-12 col-lg-6" data-aos="fade-up">
+            <div class="detail-panel tw-h-full">
+                <div class="d-flex align-items-center justify-content-between tw-mb-4">
+                    <h2 class="detail-section-title tw-mb-0">
+                        <i class="bi bi-bar-chart-fill me-2"></i>Base Stats
+                    </h2>
+                    <span class="stat-total-pill tw-font-mono">
+                        Total: <strong>{{ pokemon.stats.total }}</strong>
+                    </span>
+                </div>
+
+                <div class="d-flex flex-column tw-gap-3.5" id="baseStatsContainer">
+                    {% for s in pokemon.stats_list %}
+                    {% set pct = [((s.value / 200) * 100)|round(1), 100]|min %}
+                    {% if s.value >= 110 %}
+                        {% set bar_color = '#10B981' %}
+                    {% elif s.value >= 80 %}
+                        {% set bar_color = '#3B82F6' %}
+                    {% elif s.value >= 55 %}
+                        {% set bar_color = '#F59E0B' %}
+                    {% else %}
+                        {% set bar_color = '#EF4444' %}
+                    {% endif %}
+                    <div class="stat-bar-row">
+                        <span class="stat-bar-label">{{ s.label }}</span>
+                        <span class="stat-bar-value tw-font-mono">{{ s.value }}</span>
+                        <div class="stat-bar-track">
+                            <div
+                                class="stat-bar-fill"
+                                data-target-width="{{ pct }}%"
+                                style="width: 0%; background-color: {{ bar_color }};"
+                            ></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Type Matchups & Breeding Info -->
+        <div class="col-12 col-lg-6" data-aos="fade-up" data-aos-delay="100">
+            <div class="detail-panel tw-mb-4">
+                <h2 class="detail-section-title tw-mb-4">
+                    <i class="bi bi-shield-exclamation me-2"></i>Type Effectiveness (Defense)
+                </h2>
+
+                <!-- Weaknesses -->
+                <div class="tw-mb-3.5">
+                    <h3 class="matchup-group-title tw-text-red-500">
+                        Weak To ({{ pokemon.matchups.weaknesses|length }})
+                    </h3>
+                    {% if pokemon.matchups.weaknesses %}
+                    <div class="d-flex flex-wrap tw-gap-2">
+                        {% for m in pokemon.matchups.weaknesses %}
+                        <span class="matchup-badge" style="--badge-bg: {{ m.color }};">
+                            {{ m.display_name }}
+                            <span class="matchup-mult tw-font-mono">{{ m.label }}</span>
+                        </span>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="tw-text-sm tw-opacity-65 tw-mb-0">No weaknesses.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Resistances -->
+                <div class="tw-mb-3.5">
+                    <h3 class="matchup-group-title tw-text-emerald-500">
+                        Resistant To ({{ pokemon.matchups.resistances|length }})
+                    </h3>
+                    {% if pokemon.matchups.resistances %}
+                    <div class="d-flex flex-wrap tw-gap-2">
+                        {% for m in pokemon.matchups.resistances %}
+                        <span class="matchup-badge" style="--badge-bg: {{ m.color }};">
+                            {{ m.display_name }}
+                            <span class="matchup-mult tw-font-mono">{{ m.label }}</span>
+                        </span>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="tw-text-sm tw-opacity-65 tw-mb-0">No resistances.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Immunities -->
+                {% if pokemon.matchups.immunities %}
+                <div>
+                    <h3 class="matchup-group-title tw-text-slate-400">
+                        Immune To ({{ pokemon.matchups.immunities|length }})
+                    </h3>
+                    <div class="d-flex flex-wrap tw-gap-2">
+                        {% for m in pokemon.matchups.immunities %}
+                        <span class="matchup-badge" style="--badge-bg: {{ m.color }};">
+                            {{ m.display_name }}
+                            <span class="matchup-mult tw-font-mono">{{ m.label }}</span>
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Breeding & Capture Info -->
+            <div class="detail-panel">
+                <h2 class="detail-section-title tw-mb-4">
+                    <i class="bi bi-heart-pulse me-2"></i>Breeding &amp; Capture
+                </h2>
+                <div class="row g-3">
+                    <!-- Gender Ratio -->
+                    <div class="col-12">
+                        <div class="info-tile">
+                            <span class="info-tile-label tw-mb-1.5">Gender Ratio</span>
+                            {% if pokemon.gender.genderless %}
+                            <span class="badge rounded-pill text-bg-secondary tw-w-fit">Genderless</span>
+                            {% else %}
+                            <div class="d-flex justify-content-between tw-text-xs tw-font-bold tw-mb-1.5">
+                                <span class="tw-text-blue-500"><i class="bi bi-gender-male me-1"></i>{{ pokemon.gender.male_pct }}% Male</span>
+                                <span class="tw-text-pink-500"><i class="bi bi-gender-female me-1"></i>{{ pokemon.gender.female_pct }}% Female</span>
+                            </div>
+                            <div class="gender-bar-track">
+                                <div class="gender-bar-male" style="width: {{ pokemon.gender.male_pct }}%;"></div>
+                                <div class="gender-bar-female" style="width: {{ pokemon.gender.female_pct }}%;"></div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Egg Groups -->
+                    <div class="col-12 col-sm-6">
+                        <div class="info-tile tw-h-full">
+                            <span class="info-tile-label tw-mb-1.5">Egg Groups</span>
+                            <div class="d-flex flex-wrap tw-gap-1.5">
+                                {% for eg in pokemon.egg_groups %}
+                                <span class="egg-group-pill">{{ eg }}</span>
+                                {% else %}
+                                <span class="tw-text-sm tw-opacity-60">Undiscovered</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Capture Rate & Base Happiness -->
+                    <div class="col-12 col-sm-6">
+                        <div class="info-tile tw-h-full">
+                            <span class="info-tile-label">Capture Rate / Happiness</span>
+                            <div class="tw-font-mono tw-font-bold tw-text-base">
+                                {{ pokemon.capture_rate }}
+                                <span class="tw-text-xs tw-font-normal tw-opacity-70">({{ pokemon.capture_pct }}%)</span>
+                                <span class="tw-mx-1.5 tw-opacity-40">•</span>
+                                <span title="Base Happiness"><i class="bi bi-emoji-smile me-1 tw-text-amber-500"></i>{{ pokemon.base_happiness if pokemon.base_happiness is not none else '—' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Evolution Chain Section -->
+    <section class="detail-panel tw-mb-6" data-aos="fade-up">
+        <h2 class="detail-section-title tw-mb-4">
+            <i class="bi bi-diagram-3-fill me-2"></i>Evolution Chain
+        </h2>
+
+        {% if pokemon.evolution_chain.has_evolutions %}
+            {% if pokemon.evolution_chain.is_linear %}
+            <!-- Linear Evolution Chain -->
+            <div class="evo-linear-flow">
+                {% for step in pokemon.evolution_chain.linear_steps %}
+                    {% if step.condition %}
+                    <div class="evo-connector">
+                        <i class="bi bi-arrow-right evo-arrow-icon"></i>
+                        <span class="evo-condition-pill">{{ step.condition }}</span>
+                    </div>
+                    {% endif %}
+
+                    <a href="{{ url_for('pokemon_detail', pokemon_id=step.pokemon.id) }}"
+                       class="evo-node {% if step.pokemon.id == pokemon.id %}is-current{% endif %}">
+                        <img src="{{ step.pokemon.artwork_url }}" alt="{{ step.pokemon.display_name }}" class="evo-node-img" loading="lazy" />
+                        <span class="tw-font-mono tw-text-xs tw-opacity-65">{{ step.pokemon.formatted_id }}</span>
+                        <span class="tw-font-bold tw-text-sm">{{ step.pokemon.display_name }}</span>
+                    </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <!-- Branching Evolution Chain (e.g. Eevee, Oddish, Poliwag, Slowpoke) -->
+            <div class="row g-3">
+                {% for link in pokemon.evolution_chain.links %}
+                <div class="col-12 col-md-6">
+                    <div class="evo-branch-card">
+                        <a href="{{ url_for('pokemon_detail', pokemon_id=link.source.id) }}"
+                           class="evo-node evo-node-compact {% if link.source.id == pokemon.id %}is-current{% endif %}">
+                            <img src="{{ link.source.artwork_url }}" alt="{{ link.source.display_name }}" class="evo-node-img-sm" loading="lazy" />
+                            <span class="tw-font-mono tw-text-[11px] tw-opacity-65">{{ link.source.formatted_id }}</span>
+                            <span class="tw-font-bold tw-text-xs">{{ link.source.display_name }}</span>
+                        </a>
+
+                        <div class="evo-connector">
+                            <i class="bi bi-arrow-right evo-arrow-icon"></i>
+                            <span class="evo-condition-pill">{{ link.condition }}</span>
+                        </div>
+
+                        <a href="{{ url_for('pokemon_detail', pokemon_id=link.target.id) }}"
+                           class="evo-node evo-node-compact {% if link.target.id == pokemon.id %}is-current{% endif %}">
+                            <img src="{{ link.target.artwork_url }}" alt="{{ link.target.display_name }}" class="evo-node-img-sm" loading="lazy" />
+                            <span class="tw-font-mono tw-text-[11px] tw-opacity-65">{{ link.target.formatted_id }}</span>
+                            <span class="tw-font-bold tw-text-xs">{{ link.target.display_name }}</span>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        {% else %}
+        <div class="tw-text-center tw-py-6 tw-opacity-75">
+            <i class="bi bi-stars tw-text-2xl tw-mb-2 tw-block"></i>
+            <p class="tw-mb-0 tw-text-sm">{{ pokemon.display_name }} does not evolve.</p>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- Pokédex Historical Lore Archive Section -->
+    {% if pokemon.lore_archive %}
+    <section class="detail-panel tw-mb-6" data-aos="fade-up">
+        <div class="d-flex flex-wrap align-items-center justify-content-between tw-gap-3 tw-mb-4">
+            <div>
+                <h2 class="detail-section-title tw-mb-1">
+                    <i class="bi bi-journal-text me-2"></i>Pokédex Historical Lore Archive
+                </h2>
+                <p class="tw-text-xs md:tw-text-sm tw-opacity-70 tw-mb-0">
+                    Field observations, biological data, and regional records documented across {{ pokemon.lore_archive|length }} game editions.
+                </p>
+            </div>
+            <span class="badge rounded-pill text-bg-danger tw-px-3 tw-py-1.5 tw-font-bold tw-text-xs">
+                {{ pokemon.lore_archive|length }} Regional Logs
+            </span>
+        </div>
+
+        <div class="row g-3">
+            {% for log in pokemon.lore_archive %}
+            <div class="col-12 col-md-6 col-xl-4">
+                <div class="lore-card">
+                    <div class="d-flex align-items-center justify-content-between tw-gap-2 tw-mb-2">
+                        <span class="lore-version-pill" style="--badge-bg: {{ log.color }};">
+                            <i class="bi bi-controller me-1"></i>{{ log.version_name }}
+                        </span>
+                        <span class="lore-era-tag">{{ log.era }}</span>
+                    </div>
+                    <p class="lore-card-text tw-mb-0">{{ log.flavor_text }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Moves Table Section -->
+    <section class="detail-panel" data-aos="fade-up">
+        <div class="d-flex align-items-center justify-content-between tw-mb-4">
+            <h2 class="detail-section-title tw-mb-0">
+                <i class="bi bi-lightning-fill me-2"></i>Level-Up Moves
+            </h2>
+            <span class="tw-text-xs tw-font-semibold tw-opacity-65">Top {{ pokemon.moves|length }} Moves</span>
+        </div>
+
+        {% if pokemon.moves %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle pokedex-moves-table mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">Level</th>
+                        <th scope="col">Move</th>
+                        <th scope="col">Type</th>
+                        <th scope="col">Category</th>
+                        <th scope="col" class="text-end">Power</th>
+                        <th scope="col" class="text-end">Acc.</th>
+                        <th scope="col" class="text-end">PP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for m in pokemon.moves %}
+                    <tr>
+                        <td class="tw-font-mono tw-font-bold">
+                            {% if m.level == 0 %}Start{% else %}Lv. {{ m.level }}{% endif %}
+                        </td>
+                        <td class="tw-font-semibold">{{ m.display_name }}</td>
+                        <td>
+                            <span class="type-badge type-badge-sm" style="--badge-bg: {{ m.type_color }};">
+                                {{ m.type|title }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="move-class-pill move-class-{{ m.damage_class|lower }}">
+                                {{ m.damage_class }}
+                            </span>
+                        </td>
+                        <td class="text-end tw-font-mono">{{ m.power if m.power is not none else '—' }}</td>
+                        <td class="text-end tw-font-mono">{{ (m.accuracy ~ '%') if m.accuracy is not none else '—' }}</td>
+                        <td class="text-end tw-font-mono">{{ m.pp if m.pp is not none else '—' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="tw-text-sm tw-opacity-70 tw-mb-0">No level-up moves recorded.</p>
+        {% endif %}
+    </section>
+
+</div>
+{% endblock %}
